@@ -3,7 +3,7 @@ gg.clearResults()
 gg.clearList()
 
 local VERSION = "1.0"  -- Versión actual del script
-local GITHUB_REPO = "https://raw.githubusercontent.com/tu-usuario/tu-repo/main/"
+local GITHUB_REPO = "https://github.com/Ades12121212121/carparkinglua"
 
 local COLORS = {
     PRIMARY = "📱 ",
