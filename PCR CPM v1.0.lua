@@ -2,7 +2,8 @@ gg.setVisible(false)
 gg.clearResults()
 gg.clearList()
 
-local VERSION = "v1.0 PREMIUM"
+local VERSION = "1.0"  -- Versión actual del script
+local GITHUB_REPO = "https://raw.githubusercontent.com/tu-usuario/tu-repo/main/"
 
 local COLORS = {
     PRIMARY = "📱 ",
@@ -22,7 +23,7 @@ end
 
 function MAIN_MENU()
     local title = createTitle("CAR PARKING", "🚗 ") ..
-    "Versión: " .. VERSION .. "\n" ..
+    "Versión: v" .. VERSION .. "\n" ..
     "Creado por: PCR087\n"
     
     local menu = gg.choice({
