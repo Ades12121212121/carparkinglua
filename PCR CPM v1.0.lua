@@ -2,7 +2,7 @@ gg.setVisible(false)
 gg.clearResults()
 gg.clearList()
 
-local VERSION = "2.0"  -- Versión actual del script
+local VERSION = "1.0"  -- Versión actual del script
 local GITHUB_REPO = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/main"
 local UPDATE_FILE = "/storage/emulated/0/Android/data/update_status.txt"
 
