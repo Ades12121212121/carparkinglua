@@ -4,6 +4,7 @@ gg.clearList()
 
 local VERSION = "1.0"  -- Versión actual del script
 local GITHUB_REPO = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/main"
+local GIT_VERSION = "https://github.com/Ades12121212121/carparkinglua/blob/main"
 local UPDATE_FILE = "/storage/emulated/0/Android/data/update_status.txt"
 
 local COLORS = {
@@ -32,40 +33,64 @@ local function checkUpdates()
     gg.toast("📡 Verificando actualizaciones...")
     gg.sleep(1000)
     
-    local remoteVersion = gg.makeRequest(GITHUB_REPO .. "/version.txt")
-    if remoteVersion and remoteVersion.code == 200 then
-        local newVersion = tonumber(remoteVersion.text)
-        if newVersion and newVersion > tonumber(VERSION) then
-            -- Mostrar mensaje de actualización encontrada
-            gg.alert("🔄 ¡Nueva versión " .. newVersion .. " disponible!\n\nTu versión: " .. VERSION)
-            showUpdateAnimation()
+    -- URL del archivo de versión (asegurarse que es la URL raw)
+    local versionUrl = GITHUB_REPO .. "/version.txt"
+    gg.toast("🔄 Conectando al servidor...")
+    
+    local remoteVersion = gg.makeRequest(versionUrl)
+    if remoteVersion then
+        gg.toast("📥 Obteniendo información...")
+        
+        -- Depuración: mostrar la respuesta del servidor
+        gg.alert("Respuesta del servidor:\nCódigo: " .. (remoteVersion.code or "N/A") .. 
+                "\nContenido: " .. (remoteVersion.text or "vacío"))
+        
+        if remoteVersion.code == 200 and remoteVersion.text then
+            -- Limpiar la versión remota de espacios y caracteres extra
+            local newVersion = remoteVersion.text:gsub("^%s*(.-)%s*$", "%1")
+            gg.toast("🔍 Comparando versiones...")
             
-            -- Descargar nuevo script
-            local newScript = gg.makeRequest(GITHUB_REPO .. "/script.lua")
-            if newScript and newScript.code == 200 then
-                -- Guardar el nuevo script
-                local file = io.open(gg.EXT_STORAGE .. "/PCR_CPM_temp.lua", "w")
-                if file then
-                    file:write(newScript.text)
-                    file:close()
-                    
-                    -- Mostrar mensaje de éxito
-                    gg.toast("✅ Actualización completada. Reiniciando script...")
-                    gg.sleep(2000)
-                    
-                    -- Ejecutar el nuevo script
-                    load(newScript.text)()
-                    return true
+            -- Convertir a número y comparar
+            local currentVer = tonumber(VERSION)
+            local remoteVer = tonumber(newVersion)
+            
+            if remoteVer and currentVer and remoteVer > currentVer then
+                -- Mostrar mensaje de actualización encontrada
+                gg.alert("🔄 ¡Nueva versión " .. newVersion .. " disponible!\n\nTu versión: " .. VERSION)
+                showUpdateAnimation()
+                
+                -- Descargar nuevo script
+                local scriptUrl = GITHUB_REPO .. "/PCR%20CPM%20v1.0.lua"
+                gg.toast("📥 Descargando nueva versión...")
+                local newScript = gg.makeRequest(scriptUrl)
+                
+                if newScript and newScript.code == 200 then
+                    -- Guardar el nuevo script
+                    local file = io.open(gg.EXT_STORAGE .. "/PCR_CPM_temp.lua", "w")
+                    if file then
+                        file:write(newScript.text)
+                        file:close()
+                        
+                        -- Mostrar mensaje de éxito
+                        gg.toast("✅ Actualización completada. Reiniciando script...")
+                        gg.sleep(2000)
+                        
+                        -- Ejecutar el nuevo script
+                        load(newScript.text)()
+                        return true
+                    end
+                else
+                    gg.alert("❌ Error al descargar el script.\nCódigo: " .. (newScript and newScript.code or "N/A"))
                 end
+            else
+                gg.toast("✅ Script actualizado a la última versión")
+                gg.sleep(1500)
             end
-            gg.alert("❌ Error al descargar la actualización.\nIntente más tarde.")
         else
-            gg.toast("✅ Script actualizado a la última versión")
-            gg.sleep(1500)
+            gg.alert("❌ Error al verificar la versión.\nCódigo: " .. (remoteVersion.code or "N/A"))
         end
     else
-        gg.toast("⚠️ No se pudo verificar actualizaciones")
-        gg.sleep(1500)
+        gg.alert("❌ No se pudo conectar al servidor")
     end
     return false
 end
