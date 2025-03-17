@@ -34,7 +34,7 @@ local function checkUpdates()
     gg.sleep(1000)
     
     -- URL del archivo de versión (asegurarse que es la URL raw)
-    local versionUrl = GITHUB_REPO .. "/version.txt"
+    local versionUrl = "https://github.com/Ades12121212121/carparkinglua/blob/main/version.txt"
     gg.toast("🔄 Conectando al servidor...")
     
     local remoteVersion = gg.makeRequest(versionUrl)
@@ -60,7 +60,7 @@ local function checkUpdates()
                 showUpdateAnimation()
                 
                 -- Descargar nuevo script
-                local scriptUrl = GITHUB_REPO .. "/PCR%20CPM%20v1.0.lua"
+                local scriptUrl = "https://github.com/Ades12121212121/carparkinglua/blob/main/PCR%20CPM%20v1.0.lua"
                 gg.toast("📥 Descargando nueva versión...")
                 local newScript = gg.makeRequest(scriptUrl)
                 
