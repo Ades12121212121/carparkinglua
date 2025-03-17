@@ -3,7 +3,7 @@ gg.clearResults()
 gg.clearList()
 
 local VERSION = "1.0"  -- Versión actual del script
-local GITHUB_REPO = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/main"
+local GITHUB_RAW = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/main"
 local GIT_VERSION = "https://github.com/Ades12121212121/carparkinglua/blob/main"
 local UPDATE_FILE = "/storage/emulated/0/Android/data/update_status.txt"
 
@@ -27,28 +27,33 @@ local function showUpdateAnimation()
     end
 end
 
+-- Función para extraer el número de versión del contenido
+local function extractVersion(content)
+    if not content then return nil end
+    -- Buscar un número de versión en formato X.X o X.XX
+    local version = content:match("([%d%.]+)")
+    return version
+end
+
 -- Verificar actualizaciones
 local function checkUpdates()
     -- Mostrar mensaje de verificación
     gg.toast("📡 Verificando actualizaciones...")
     gg.sleep(1000)
     
-    -- URL del archivo de versión (asegurarse que es la URL raw)
-    local versionUrl = "https://github.com/Ades12121212121/carparkinglua/blob/main/version.txt"
+    -- URL del archivo de versión (usando la URL raw)
+    local versionUrl = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/refs/heads/main/version.txt"
     gg.toast("🔄 Conectando al servidor...")
     
     local remoteVersion = gg.makeRequest(versionUrl)
     if remoteVersion then
         gg.toast("📥 Obteniendo información...")
         
-        -- Depuración: mostrar la respuesta del servidor
-        gg.alert("Respuesta del servidor:\nCódigo: " .. (remoteVersion.code or "N/A") .. 
-                "\nContenido: " .. (remoteVersion.text or "vacío"))
+        -- Extraer la versión del contenido
+        local newVersion = extractVersion(remoteVersion.text)
         
-        if remoteVersion.code == 200 and remoteVersion.text then
-            -- Limpiar la versión remota de espacios y caracteres extra
-            local newVersion = remoteVersion.text:gsub("^%s*(.-)%s*$", "%1")
-            gg.toast("🔍 Comparando versiones...")
+        if newVersion then
+            gg.toast("🔍 Comparando versiones: Local " .. VERSION .. " vs Remota " .. newVersion)
             
             -- Convertir a número y comparar
             local currentVer = tonumber(VERSION)
@@ -60,11 +65,11 @@ local function checkUpdates()
                 showUpdateAnimation()
                 
                 -- Descargar nuevo script
-                local scriptUrl = "https://github.com/Ades12121212121/carparkinglua/blob/main/PCR%20CPM%20v1.0.lua"
-                gg.toast("📥 Descargando nueva versión...")
+                local scriptUrl = "https://raw.githubusercontent.com/Ades12121212121/carparkinglua/refs/heads/main/PCR%20CPM%20v1.0.lua"
+                gg.toast("📥 Descargando nueva versión desde: " .. scriptUrl)
                 local newScript = gg.makeRequest(scriptUrl)
                 
-                if newScript and newScript.code == 200 then
+                if newScript and newScript.code == 200 and newScript.text and #newScript.text > 100 then
                     -- Guardar el nuevo script
                     local file = io.open(gg.EXT_STORAGE .. "/PCR_CPM_temp.lua", "w")
                     if file then
@@ -80,14 +85,16 @@ local function checkUpdates()
                         return true
                     end
                 else
-                    gg.alert("❌ Error al descargar el script.\nCódigo: " .. (newScript and newScript.code or "N/A"))
+                    gg.alert("❌ Error al descargar el script.\nCódigo: " .. (newScript and newScript.code or "N/A") .. 
+                            "\nTamaño: " .. (newScript and #newScript.text or 0) .. " bytes")
                 end
             else
                 gg.toast("✅ Script actualizado a la última versión")
                 gg.sleep(1500)
             end
         else
-            gg.alert("❌ Error al verificar la versión.\nCódigo: " .. (remoteVersion.code or "N/A"))
+            gg.alert("❌ Error: No se pudo extraer la versión del archivo.\nContenido recibido: " .. 
+                    (remoteVersion.text and remoteVersion.text:sub(1, 100) or "vacío"))
         end
     else
         gg.alert("❌ No se pudo conectar al servidor")
